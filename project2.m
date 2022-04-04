@@ -17,7 +17,7 @@ mariana_longitude = importdata('mariana_longitude.csv')';
 %% Manipulating Data for Incomplete Singular Value Decomposition 
 [longitude, latitude] = meshgrid(mariana_longitude, mariana_latitude);
 depth = griddata(mariana_longitude, mariana_latitude, mariana_depth,longitude,latitude);
-
+ 
 %% Contour Plot of Mariana Trench Depths 
 figure(1)
 contourf(longitude, latitude, depth) 
@@ -49,39 +49,80 @@ unit_vec(:,i) = AT_A * unit_vec(:,i-1) / norm(AT_A * unit_vec(:,i-1));
     
     end
  
- V1 = unit_vec(:,end); 
+ Corresponding_V1_EigenVec = unit_vec(:,end); 
+ Corresponding_V1_EigenVal = unit_vec(:,end)' * AT_A * unit_vec(:,end); 
 
 end 
 
-N = [1:size(V1)]; 
+N = [1:size(Corresponding_V1_EigenVec)]; 
 figure(2)
-plot(N,V1)
+plot(N,Corresponding_V1_EigenVec)
 title('Eigenvector vs. N Location')
 xlabel('Location') 
 ylabel('Eigenvector Value') 
 
 %% Eigenvector Calculations 
-% V50 = zeros(1,50); 
-% 
-% for i = 2:50 
-%     u_1 = randi(10,1440,1);
-%     u_1 = u_1 / norm(u_1); 
-%     
-%     u_1(:,i) = AT_A * u_1(:,i-1); 
-%     
-%     for j = 1:i-1 
-%     u_1(:,i) =  u_1(:,i-1) - symsum(u_1(:,i)' * V50(j)*V50(j),j,1,i-1);
-%     end 
-%     
-%     u_1(:,i) = u_1(:,i)/norm(u_1(:,i))
-%     
-%     if norm(u_1(:,i) - u_1(:,i-1)) < 10^-3
-%         
-%         u_1(:,i) = V50(:,i) 
-%         break; 
-%     end 
-%     
-% end 
+V50 = zeros(1440,50); 
+
+for j = 1:50
+    
+    u_1 = rand(1440,1); 
+    u_1 = u_1 / norm(u_1); 
+    mag_error = 1; 
+    
+    while (mag_error > 10^-3) 
+     u_1_prev = u_1;
+     u_1 = AT_A * u_1; 
+     total_sum = 0;
+     
+    for k = 1:j-1
+     summation = (u_1' * V50(:,k) * V50(:,k));
+     total_sum = total_sum + summation;
+    end 
+     
+     u_1 = u_1 - total_sum; 
+     u_1 = u_1 / norm(u_1);     
+     mag_error = norm(u_1 - u_1_prev);
+    
+    end 
+      
+      V50(:,j) = u_1;
+      Corresponding_V_Vals_EigenVal(j) = u_1' * AT_A * u_1; 
+      
+end 
+
+figure(3)
+semilogy(Corresponding_V_Vals_EigenVal)
+title('Semilog Plot of Eigenvalues')
+xlabel('Location') 
+ylabel('Eigenvalues') 
+
+%% SVD Calculations (NEED TO WORK ON THIS) 
+sigma = diag(sqrt(Corresponding_V_Vals_EigenVal)); 
+
+for ii = 1:50 
+    U(:,ii) = (mariana_depth' * V50(:,ii)) ./ sigma(ii,ii); 
+end 
+
+SVD = U * sigma *  Corresponding_V_Vals_EigenVal';
+
+
+
+%% Test 
+for iii = 1:10 
+    
+     U(:,iii) = (mariana_depth' * V50(:,iii)) ./ sigma(iii,iii); 
+    
+end 
+
+
+
+
+
+
+
+
+
 
 %% Deepest Point Function 
 function [Deepest_Point_Sampled, Deepest_Latitude, Deepest_Longitude] = calc_maxdepth(mariana_depth, mariana_latitude, mariana_longitude)
