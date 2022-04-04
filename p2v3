@@ -32,28 +32,7 @@ avg_depth = mean(depth_below_6km)/1000;
 
 %% Finding Eigenvalues
 ATA = transpose(A) * A;
-% t = rand([1440 1]);
-% mag_t = norm(t);
-% unit_vec = t/mag_t;
-% unit_vec_mag = norm(unit_vec);
-% V1 = (ATA * unit_vec) / norm(ATA * unit_vec);
-% 
-% plot(1:1440,V1);
-% 
-% k = rand([1440 1]);
-% mag_k = norm(k);
-% unit_vec_k = k/mag(k);
-% unit_plus_one_star = ATA * unit_vec_k;
-
 V = zeros(1440,50);
-% unit_vec = zeros(1440,1);
-% sums = zeros(1440,50);
-% t = rand([1440 1]);
-% unit_vec = t / norm(t);
-% unit_vec_star = ATA * unit_vec;
-% summation = sum((unit_vec_star' * V(:,1)) * V(:,1));
-% unit_vec_new = unit_vec_star - summation;
-% V(:,1) = unit_vec_new / norm(unit_vec_new); 
 
 for j = 1:50
     
