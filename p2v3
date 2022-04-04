@@ -1,0 +1,111 @@
+%% APPM 2360 Project 2
+
+clear; clc;
+
+%% Import Data
+
+A = importdata('mariana_depth.csv');
+lon = importdata('mariana_longitude.csv');
+lat = importdata('mariana_latitude.csv');
+
+%% Plot the data
+figure();
+hold on
+[LAT, LON] = meshgrid(lat,lon);
+DP = griddata(lat,lon,A,LAT,LON);
+contourf(LON,LAT,DP);
+xlabel('Longitude [deg]');
+ylabel('Latitude [deg]');
+title('Depth of Mariana Trench');
+cb = contourcbar('Location','eastoutside');
+cb.XLabel.String = 'Depth in meters';
+hold off
+
+%% Data Analysis
+max_depth = min(A,[],'all');
+[max_depth_lat_pos,max_depth_lon_pos] = find(A == max_depth);
+max_depth_lat = lat(161);
+max_depth_lon = lon(385);
+indx = A < -6000;
+depth_below_6km = A(indx);
+avg_depth = mean(depth_below_6km)/1000;
+
+%% Finding Eigenvalues
+ATA = transpose(A) * A;
+% t = rand([1440 1]);
+% mag_t = norm(t);
+% unit_vec = t/mag_t;
+% unit_vec_mag = norm(unit_vec);
+% V1 = (ATA * unit_vec) / norm(ATA * unit_vec);
+% 
+% plot(1:1440,V1);
+% 
+% k = rand([1440 1]);
+% mag_k = norm(k);
+% unit_vec_k = k/mag(k);
+% unit_plus_one_star = ATA * unit_vec_k;
+
+V = zeros(1440,50);
+% unit_vec = zeros(1440,1);
+% sums = zeros(1440,50);
+% t = rand([1440 1]);
+% unit_vec = t / norm(t);
+% unit_vec_star = ATA * unit_vec;
+% summation = sum((unit_vec_star' * V(:,1)) * V(:,1));
+% unit_vec_new = unit_vec_star - summation;
+% V(:,1) = unit_vec_new / norm(unit_vec_new); 
+
+for j = 1:50
+    
+    u_1 = rand(1440,1); 
+    u_1 = u_1 / norm(u_1); 
+    mag_error = 1; 
+    
+    while (mag_error > 10^-3) 
+     u_1_prev = u_1;
+     u_1 = ATA * u_1; 
+     total_sum = 0;
+     
+    for k = 1:j-1
+     summation = (u_1' * V(:,k) * V(:,k));
+     total_sum = total_sum + summation;
+    end 
+     
+     u_1 = u_1 - total_sum; 
+     u_1 = u_1 / norm(u_1);     
+     mag_error = norm(u_1 - u_1_prev);
+    
+    end 
+      
+      V(:,j) = u_1;
+      Corresponding_V_Vals_EigenVal(j) = u_1' * ATA * u_1; 
+      
+end 
+
+figure();
+semilogy(Corresponding_V_Vals_EigenVal)
+title('Semilog Plot of Eigenvalues')
+xlabel('Location') 
+ylabel('Eigenvalues') 
+
+sigma = sqrt(diag(Corresponding_V_Vals_EigenVal));
+U = zeros(1320,50);
+
+for i = 1:50
+   U(:,i) = A * V(:,i) / sigma(i,i);
+end
+
+SVD = U*sigma*transpose(V);
+
+% Plot the data
+figure();
+hold on
+[LAT, LON] = meshgrid(lat,lon);
+DP = griddata(lat,lon,SVD,LAT,LON);
+contourf(LON,LAT,DP);
+xlabel('Longitude [deg]');
+ylabel('Latitude [deg]');
+title('Depth of Mariana Trench');
+cb = contourcbar('Location','eastoutside');
+cb.XLabel.String = 'Depth in meters';
+hold off
