@@ -23,8 +23,8 @@ figure(1)
 contourf(longitude, latitude, depth) 
 title('Mariana Trench Depths at Different Locations')
 xlim([138.9 150])
-xlabel('Longitude') 
-ylabel('Latitude') 
+xlabel('Longitude [°]') 
+ylabel('Latitude [°]') 
 colorbar
 
 %% Function Calls
@@ -54,6 +54,7 @@ unit_vec(:,i) = AT_A * unit_vec(:,i-1) / norm(AT_A * unit_vec(:,i-1));
 
 end 
 
+Corresponding_V1_EigenVal
 N = [1:size(Corresponding_V1_EigenVec)]; 
 figure(2)
 plot(N,Corresponding_V1_EigenVec)
@@ -101,20 +102,43 @@ ylabel('Eigenvalues')
 sigma = diag(sqrt(Corresponding_V_Vals_EigenVal)); 
 
 for ii = 1:50 
+    
     U(:,ii) = (mariana_depth' * V50(:,ii)) ./ sigma(ii,ii); 
+   
 end 
 
-SVD = U * sigma *  Corresponding_V_Vals_EigenVal';
+ 
+ SVD = U * sigma * V50';
+ 
+
+ [longitude, latitude] = meshgrid(mariana_longitude', mariana_latitude);
+ 
+ figure(4)
+ contourf(longitude',latitude',SVD)
+ title('SVD Decomposition')
+ xlabel('Longitude') 
+ ylabel('Latitude') 
+ colorbar
 
 
-
-%% Test 
 for iii = 1:10 
     
-     U(:,iii) = (mariana_depth' * V50(:,iii)) ./ sigma(iii,iii); 
-    
+    U(:,iii) = (mariana_depth' * V50(:,iii)) ./ sigma(iii,iii); 
+   
 end 
 
+ 
+ SVD = U * sigma * V50';
+ 
+
+ [longitude, latitude] = meshgrid(mariana_longitude', mariana_latitude);
+ 
+ figure(5)
+ contourf(longitude',latitude',SVD)
+ title('SVD Decomposition with Less Columns of U and V')
+ xlabel('Longitude') 
+ ylabel('Latitude') 
+ colorbar
 
 
 
